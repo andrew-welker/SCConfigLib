@@ -72,9 +72,9 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Delegates\Delegates.cs" />
     <Compile Include="EnvironmentConfigurationReader.cs" />
     <Compile Include="EnvironmentConfigurationWriter.cs" />
-    <Compile Include="Readers\JsonSettingsReader.cs" />
     <Compile Include="JSON\Camera.cs" />
     <Compile Include="JSON\Configuration.cs" />
     <Compile Include="JSON\Display.cs" />
@@ -85,7 +85,7 @@
     <Compile Include="JSON\VideoConference.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SourceConfigurationReader.cs" />
-    <Compile Include="Writers\JsonSettingsWriter.cs" />
+    <Compile Include="SourceConfigurationWriter.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>

@@ -103,7 +103,10 @@ FUNCTION SaveSettings()
 {	
 	try
 	{
-		_configWriter.SaveSettings(_config);
+		if(ShowSave = 1)
+    	{
+			_configWriter.SaveSettings(_config);
+		}
 	}
 	catch
 	{

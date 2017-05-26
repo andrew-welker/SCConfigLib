@@ -14,119 +14,44 @@ Comments:
   Compiler Directives
   (Uncomment and declare compiler directives as needed)
 *******************************************************************************************/
-// #ENABLE_DYNAMIC
-// #SYMBOL_NAME ""
-// #HINT ""
+#ENABLE_DYNAMIC
  #DEFINE_CONSTANT MaxNumberOfSources 16
-// #CATEGORY "" 
-// #PRINT_TO_TRACE
-// #DIGITAL_EXPAND 
-// #ANALOG_SERIAL_EXPAND 
-// #OUTPUT_SHIFT 
-// #HELP_PDF_FILE ""
+#DEFINE_CONSTANT TruncationError 32776
 #DEFAULT_VOLATILE
 #ENABLE_STACK_CHECKING
 #ENABLE_TRACE
-// #ENCODING_ASCII
-// #ENCODING_UTF16
-// #ENCODING_INHERIT_FROM_PARENT
-// #ENCODING_INHERIT_FROM_PROGRAM
-/*
-#HELP_BEGIN
-   (add additional lines of help lines)
-#HELP_END
-*/
 
 /*******************************************************************************************
   Include Libraries
   (Uncomment and include additional libraries as needed)
 *******************************************************************************************/
-// #CRESTRON_LIBRARY ""
-// #USER_LIBRARY ""
-   #USER_SIMPLSHARP_LIBRARY "SCConfigLib"
+   #USER_SIMPLSHARP_LIBRARY "SCConfigSplus"
 /*******************************************************************************************
   DIGITAL, ANALOG and SERIAL INPUTS and OUTPUTS
   (Uncomment and declare inputs and outputs as needed)
 *******************************************************************************************/
- DIGITAL_INPUT  AddSource,RemoveSource,EditSource;
- DIGITAL_INPUT EnableSource;
+ DIGITAL_INPUT  AddSource,RemoveSource,EditSource,Update,Save;
  ANALOG_INPUT SourceToEdit;
- STRING_INPUT SourceName[64],InputNumber[2];
-// BUFFER_INPUT 
-
+ ANALOG_INPUT Enable,ShareableSource,EnableSyncDetect;
+ STRING_INPUT SourceName[64], SourceInput[2];
+ STRING_INPUT FileName[128];
+                                
+ DIGITAL_OUTPUT ShowSave;
  STRING_OUTPUT NumberOfSourcesText;
-
- ANALOG_OUTPUT NumberOfEnabledSources;
         
- DIGITAL_OUTPUT SelectedSourceEnabled;
+ ANALOG_OUTPUT SelectedSourceEnabled, SelectedSourceShareable, SelectedSourceEnableSyncDetect;
  STRING_OUTPUT SelectedSourceName,SelectedSourceInput;
                                 
  STRING_OUTPUT SourceNameText[MaxNumberOfSources],SourceInputText[MaxNumberOfSources];
- DIGITAL_OUTPUT SourceEnabled[MaxNumberofSources];
+ ANALOG_OUTPUT SourceEnabled[MaxNumberofSources],SourceShareable[MaxNumberOfSources],SourceEnableSyncDetect[MaxNumberOfSources];
+                          
+STRING_PARAMETER SectionName[128];
 
-/*******************************************************************************************
-  SOCKETS
-  (Uncomment and define socket definitions as needed)
-*******************************************************************************************/
-// TCP_CLIENT
-// TCP_SERVER
-// UDP_SOCKET
+dynamic Source sources[1];
 
-/*******************************************************************************************
-  Parameters
-  (Uncomment and declare parameters as needed)
-*******************************************************************************************/
-// INTEGER_PARAMETER
-// SIGNED_INTEGER_PARAMETER
-// LONG_INTEGER_PARAMETER
-// SIGNED_LONG_INTEGER_PARAMETER
-// STRING_PARAMETER
-
-/*******************************************************************************************
-  Parameter Properties
-  (Uncomment and declare parameter properties as needed)
-*******************************************************************************************/
-/*
-#BEGIN_PARAMETER_PROPERTIES parameter_variable, parameter_variable, ...
-   // propValidUnits = // unitString or unitDecimal|unitHex|unitPercent|unitCharacter|unitTime|unitTicks;
-   // propDefaultUnit = // unitString, unitDecimal, unitHex, unitPercent, unitCharacter, unitTime or unitTicks;
-   // propBounds = lower_bound , upper_bound;
-   // propDefaultValue = ;  // or, propDefaultValue = "";
-   // propList = // { "value" , "label" } , { "value" , "label" } , ... ;
-   // propShortDescription = "status_bar_hint_text";
-   // #BEGIN_PROP_FULL_DESCRIPTION  line_1...  line_2...  line_n  #END_PROP_FULL_DESCRIPTION
-   // #BEGIN_PROP_NOTES line_1...  line_2...  line_n  #END_PROP_NOTES
-#END_PARAMETER_PROPERTIES
-*/
-
-/*******************************************************************************************
-  Structure Definitions
-  (Uncomment and define structure definitions as needed)
-  Note:  Be sure to initialize all declared STRING variables as needed
-         For example, in Function Main: struct.myString = "";
-*******************************************************************************************/
-/*
-STRUCTURE MyStruct1
-{
-};
-
-MyStruct1 struct;
-*/
-
-/*******************************************************************************************
-  Global Variables
-  (Uncomment and declare global variables as needed)
-  Note:  Be sure to initialize all declared STRING variables as needed
-         For example, in Function Main: myString = "";
-*******************************************************************************************/
-// INTEGER
-// LONG_INTEGER
-// SIGNED_INTEGER
-// SIGNED_LONG_INTEGER
-// STRING
-INTEGER numberOfSourcesStore;
- STRING NameStore[64],InputStore[2];              
-SourceConfigurationUpdater configUpdater;
+SourceConfigurationReader reader;
+SourceConfigurationWriter writer;
+ STRING nameStore[128],inputStore[128];            
 /*******************************************************************************************
   Functions
   (Add any additional functions here)
@@ -135,94 +60,91 @@ SourceConfigurationUpdater configUpdater;
 *******************************************************************************************/
 FUNCTION Initialize()
 {
-	configUpdater.Initialize(MaxNumberOfSources);
-	RegisterDelegate(configUpdater,UpdateSourceInformation,UpdateSourceInformationCallback);
-	RegisterDelegate(configUpdater,UpdateSourceCount,UpdateSourceCountCallback);
-	RegisterDelegate(configUpdater,UpdateSelectedSource,UpdateSelectedSourceCallback);
-	RegisterDelegate(configUpdater,UpdateSourceEnabledCount,UpdateSourceEnabledCountCallback);
+	RegisterDelegate(reader,OnConfigurationChanged,UpdateSourcesCallback);
 }
 
-callback FUNCTION UpdateSourceEnabledCountCallback(integer count)
+SIGNED_INTEGER_FUNCTION ResizeSourceArray(integer newSize)
 {
-	Integer tempCount;
+		integer status;
+		
+		print("ResizeSourceArray newSize: %u newSize + 2: %u\n", newSize, newSize + 2);
 
-	tempCount = count;
+		//Skipping the first element to allow for removal of all elements.
+		status = ResizeStructureArray(sources,newSize + 2);
 
-	NumberOfEnabledSources = tempCount;
-}
-
-callback FUNCTION UpdateSelectedSourceCallback(Source information)
-{
-	Source tempSource;
-
-	tempSource = information;
-	SelectedSourceName = tempsource.Name;	
-	SelectedSourceEnabled = tempsource.Enabled;
-	SelectedSourceInput = itoa(tempsource.Input);
-}
-
-callback FUNCTION UpdateSourceInformationCallback(integer index, Source information)
-{
-	integer tempIndex;
-	Source SourceToShow;
-    
-	tempIndex = index;
-	SourceToShow = information;
-                  
-	SourceNameText[tempindex] = SourceToShow.Name;
-	SourceInputText[tempindex] = itoa(SourceToShow.Input);
-	
-	SourceEnabled[tempindex] = SourceToShow.Enabled;
-}
-
-callback FUNCTION UpdateSourceCountCallback(integer count)
-{
-	integer tempCount;
-    integer i;
-	tempCount = count;
-
-	NumberOfSourcesText = ITOA(tempcount);
-	NumberOfSourcesStore = tempcount;
-
-	if(tempCount = 1)
-	{
-		for(i = 1 to MaxNumberOfSources)
+		if(status != 0 && status != TruncationError)
 		{
+			GenerateUserError("Unable to resize Source Array. Error %X",status);
+			return (-1);
+		}
+		else
+		{
+			GenerateUserNotice("Array resized successfully. New size: %u", writer.GetCurrentSourceCount(sources));
+			return (0);
+		}
+
+}
+
+callback FUNCTION UpdateSourcesCallback(integer index, Source source)
+{
+	integer i;
+    
+	//Skipping the first element in the S+ array. returned index is 0-based, so element 0 needs to go to element 2.
+	//If array is 'empty', writer.GetCurrentSourceCount(sources) will return 0. Array is really size 1, and needs to be
+	//size 2.
+	i = index + 1;
+
+	print("CurrentSize: %u Index: %u, i: %u\n",writer.GetCurrentSourceCount(sources),index,i);
+                
+	if(i > writer.GetCurrentSourceCount(sources))
+	{
+		if(ResizeSourceArray(i) < 0)
+		{
+			return;
+		}
+	}	
+
+	sources[i + 1] = source;
+
+	SourceInputText[i] = itoa(source.Input);
+	SourceNameText[i] = Source.Name;
+	SourceEnabled[i] = Source.Enabled;
+	SourceShareable[i] = Source.ShareableSource;
+	SourceEnableSyncDetect[i] = Source.EnableSyncDetect;
+}
+
+Function UpdateOutputs()
+{
+	integer i;
+	integer count;
+
+	count = writer.GetCurrentSourceCount(sources);
+
+	NumberOfSourcesText = itoa(count);
+	
+	for(i = 1 to MaxNumberOfSources)
+	{
+		if(i + 1 < count)
+		{
+			SourceInputText[i] = itoa(sources[i+1].Input);
+			SourceNameText[i] = sources[i+1].Name;
+			SourceEnabled[i] = sources[i+1].Enabled;
+			SourceShareable[i] = sources[i+1].ShareableSource;
+			SourceEnableSyncDetect[i] = sources[i+1].EnableSyncDetect;
+		}
+		else
+		{
+			SourceInputText[i] = "";
+			SourceNameText[i] = "";
 			SourceEnabled[i] = 0;
+			SourceShareable[i] = 0;
+			SourceEnableSyncDetect[i] = 0;
 		}
 	}
+
+	
 }
 
-/*
-Function MyFunction1()
-{
-    // TODO:  Add local variable declarations here
-
-    // TODO:  Add code here
-}
-*/
-
-/*
-Integer_Function MyIntFunction1()
-{
-    // TODO:  Add local variable declarations here
-
-    // TODO:  Add code here
-
-    Return (0);
-}
-*/
-
-/*
-String_Function MyStrFunction1()
-{
-    // TODO:  Add local variable declarations here
-
-    // TODO:  Add code here
-
-    Return ("");
-}
-*/
 
 /*******************************************************************************************
   Event Handlers
@@ -230,95 +152,111 @@ String_Function MyStrFunction1()
 *******************************************************************************************/
 CHANGE SourceToEdit
 {
-	if(SourceToEdit <= NumberOfSourcesStore)
-	{
-		configUpdater.GetSource(SourceToEdit);
-	}
-}
+	integer i;
+	
+	//leaving element 1 empty. First element is actually element 2;
+	i = SourceToEdit + 1;
 
-    
+	SelectedSourceInput = itoa(sources[i].Input);
+	SelectedSourceName = sources[i].Name;
+	SelectedSourceEnabled = sources[i].Enabled;
+	SelectedSourceShareable = sources[i].ShareableSource;	
+	SelectedSourceEnableSyncDetect = sources[i].EnableSyncDetect;
+}    
 
 PUSH AddSource
 {
-	Source SourceToAdd;
+	Source newSource;
 
-	SourceToAdd.Name = SourceName;
-	SourceToAdd.Enabled = EnableSource;
-	SourceToAdd.Input = atoi(InputStore);
+	integer currentCount;
 
-	configUpdater.AddSource(SourceToAdd);	
+	newSource.Name = nameStore;
+	newSource.Input = atoi(inputStore);
+	newSource.Enabled = Enable;
+	newSource.ShareableSource = ShareableSource;
+	newSource.EnableSyncDetect = EnableSyncDetect;
+    
+	currentCount = writer.GetCurrentSourceCount(sources);
+
+	print("CurrentCount: %u CurrentCount + 1: %u\n", currentCount, currentCount + 1);
+                                         
+	//Skipping the first 2 elements. If CurrentCount is 0, actual S+ array size is 2. Need it to be one bigger, so we add 3
+	if(ResizeSourceArray(currentCount + 1) < 0)
+	{
+		GenerateUserError("Unable to add new source");
+		return;
+	}
+
+	sources[currentCount + 2] = newSource;
+
+	UpdateOutputs();	
+
+	ShowSave = 1;	
 }
 
 PUSH EditSource
 {
-	Source SourceToUpdate;
+	integer i;
 
-	SourceToUpdate.Name = NameStore;
-	SourceToUpdate.Enabled = EnableSource;
-	SourceToUpdate.Input = atoi(InputStore);
+	//leaving element 1 empty. First element is actually element 2;	
+	i = SourceToEdit + 1;
 
-	configUpdater.UpdateSource(SourceToEdit, SourceToUpdate);
+	sources[i].Name= nameStore;
+	sources[i].Input = atoi(inputStore);
+	sources[i].Enabled = Enable;
+	sources[i].ShareableSource = ShareableSource;
+	sources[i].EnableSyncDetect = EnableSyncDetect;
+
+	ShowSave = 1;
 }
 
 PUSH RemoveSource
 {
-	configUpdater.RemoveSource(SourceToEdit);
+	integer sourceToRemove;
+	Source tempSource;
+                                      
+	//leaving element 1 empty. First element is actually element 2. Addition takes place in S#
+    sourceToRemove = SourceToEdit;
 
-	SourceEnabled[SourceToEdit] = 0;
+    writer.RemoveSource(sourceToRemove, sources);
+
+	UpdateOutputs();
+	
+	ShowSave = 1;
+}
+
+push Update
+{
+	reader.ReadSettings();
+}
+
+push Save
+{
+	try
+	{
+		if(ShowSave = 1)
+		{
+			writer.SaveSettings(sources);
+		}
+	}
+	catch
+	{
+		trace("Exception while saving configuration: %s", GetExceptionMessage());
+		GenerateUserError("Exception while saving configuration: %s", GetExceptionMessage());
+	}
+
+	ShowSave = 0;
 }
 
 Change SourceName
 {
-	NameStore = SourceName;
+	nameStore = SourceName;
 }
 
-Change InputNumber
+Change SourceInput
 {
-	InputStore = InputNumber;
+	inputStore = SourceInput;
 }
-
-/*
-RELEASE input
-{
-    // TODO:  Add code here
-}
-*/
-
-
-/*
-EVENT
-{
-    // TODO:  Add code here
-}
-*/
-
-/*
-SOCKETCONNECT
-{
-    // TODO:  Add code here
-}
-*/
-
-/*
-SOCKETDISCONNECT
-{
-    // TODO:  Add code here
-}
-*/
-
-/*
-SOCKETRECEIVE
-{
-    // TODO:  Add code here
-}
-*/
-
-/*
-SOCKETSTATUS
-{
-    // TODO:  Add code here
-}
-*/
 
 /*******************************************************************************************
   Main()
@@ -328,17 +266,14 @@ SOCKETSTATUS
 
 Function Main()
 {
-    // TODO:  Add code here
-    // Initialize declared global and local variables/arrays as needed.
-
      WaitForInitializationComplete();
-    // If you are reading any Input or Output variables, uncomment
-    //   the WaitForInitializationComplete statement above and read
-    //   them afterwards.  Input/Output variables will not have
-    //   their correct values set until after the logic processor
-    //   runs and propagates the values to them.
 
 	Initialize();
+	
+	reader.Initialize(FileName, sectionName);
+	reader.ReadSettings();
+	
+	writer.Initialize(FileName, sectionName);
 }
 
 

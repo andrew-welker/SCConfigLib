@@ -16,22 +16,7 @@
       "Output": 65
     }
   ],
-  "Sources": [
-    {
-      "Input": 1,
-      "Enabled": 1,
-      "Name": "Source 1",
-      "ShareableSource": false,
-      "EnableSyncDetect": false
-    },
-	{
-      "Input": 2,
-      "Enabled": 1,
-      "Name": "Source 2",
-      "ShareableSource": 1,
-      "EnableSyncDetect": 1
-    }
-  ],
+  "Sources": [],
   "Switcher": {
     "Type": 2,
     "IpAddress": null,

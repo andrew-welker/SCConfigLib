@@ -1,5 +1,6 @@
 ﻿namespace SC.SimplSharp.Config
 {
+    [System.Obsolete]
     public class ConfigurationWriter<T> where T : class, new()
     {
         private readonly ISettingsWriter _settingsWriter;
@@ -20,6 +21,11 @@
         public void SaveSettings(T settings)
         {
             _settingsWriter.SaveSection(settings);
+        }
+
+        public void SaveSettings(T settings, string sectionName)
+        {
+            _settingsWriter.SaveSection(settings, sectionName);
         }
     }
 }

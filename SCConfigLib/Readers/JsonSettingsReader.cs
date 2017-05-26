@@ -12,7 +12,6 @@ namespace SCConfigSplus.Readers
     public class JsonSettingsReader:ISettingsReader
     {
         private readonly string _configurationFilePath;
-        private static readonly CCriticalSection FileReadCriticalSection = new CCriticalSection();
 
         private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
         {
@@ -111,7 +110,6 @@ namespace SCConfigSplus.Readers
 
             var json = ReadFile();
 
-
             var settingsSection = GetSectionJToken(json, sectionName);
 
             return settingsSection == null
@@ -125,15 +123,21 @@ namespace SCConfigSplus.Readers
 
             try
             {
-                FileReadCriticalSection.Enter();
+                FileOperations.FileCriticalSection.Enter();
                 using (var reader = new StreamReader(_configurationFilePath))
                 {
                     json = reader.ReadToEnd();
                 }
             }
+            catch (IOException ex)
+            {
+                ErrorLog.Exception("Exception attempting to open file.", ex);
+
+                json = String.Empty;
+            }
             finally
             {
-                FileReadCriticalSection.Leave();
+                FileOperations.FileCriticalSection.Leave();
             }
             return json;
         }
@@ -146,7 +150,7 @@ namespace SCConfigSplus.Readers
         /// <returns>JToken containing the desired section</returns>
         private JToken GetSectionJToken(string json, string section)
         {
-            var settingsData = new JObject();
+            JToken settingsData;
 
             try
             {
@@ -154,8 +158,9 @@ namespace SCConfigSplus.Readers
             }
             catch (JsonReaderException ex)
             {
-                ErrorLog.Error("Exception parsing JSON at line {0} position {1}. {2}", ex.LineNumber, ex.LinePosition,
-                    ex.Message);
+                ErrorLog.Exception("Exception parsing JSON", ex);
+
+                settingsData = new JObject();
             }
 
             var settingsSection = settingsData[section];

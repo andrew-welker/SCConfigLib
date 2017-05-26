@@ -1,8 +1,6 @@
 ﻿namespace SC.SimplSharp.Config
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [System.Obsolete]
     public class ConfigurationReader<T> where T: class, new()
     {
         private readonly ISettingsReader _settingsReader;

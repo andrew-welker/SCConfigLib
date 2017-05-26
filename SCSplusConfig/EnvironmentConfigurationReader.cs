@@ -1,6 +1,6 @@
-﻿using SC.SimplSharp.Config;
-using SCConfigSplus.JSON;
+﻿using SCConfigSplus.JSON;
 using SCConfigSplus.Readers;
+using SCSplusConfig.Delegates;
 using SSMono.IO;
 
 namespace SCSplusConfig
@@ -9,16 +9,8 @@ namespace SCSplusConfig
 
     public class EnvironmentConfigurationReader
     {
-        private ConfigurationReader<EnvironmentControls> _configurationReader;
-        private JsonSettingsReader _settingsReader;
+        private string _filePath;
         private FileSystemWatcher _watcher;
-
-        /// <summary>
-        /// Delegate for S+ for OnConfigurationChanged event.
-        /// </summary>
-        /// <param name="sender">Object that triggered the event</param>
-        /// <param name="config">Config to send to S+</param>
-        public delegate void EnvControlsConfigChangedDel(object sender, EnvironmentControls config);
 
         /// <summary>
         /// Event to update configuration when the file changes.
@@ -32,9 +24,7 @@ namespace SCSplusConfig
         /// <param name="path">Path to file to be read</param>
         public void Initialize(string path)
         {
-            _settingsReader = new JsonSettingsReader(path);
-
-            _configurationReader = new ConfigurationReader<EnvironmentControls>(_settingsReader);
+            _filePath = path;
 
             _watcher = new FileSystemWatcher();
 
@@ -47,7 +37,8 @@ namespace SCSplusConfig
         /// <returns>EnvironmentControls indicating the stored settings</returns>
         public void ReadSettings()
         {
-            var settings = _configurationReader.ReadSettings();
+            var reader = new JsonSettingsReader(_filePath);
+            var settings = reader.LoadSection<EnvironmentControls>();
 
             FireOnConfigChangedEvent(settings);
         }
@@ -81,7 +72,9 @@ namespace SCSplusConfig
                 return;
             }
 
-            var settings = _configurationReader.ReadSettings();
+            var reader = new JsonSettingsReader(_filePath);
+
+            var settings = reader.LoadSection<EnvironmentControls>();
 
             FireOnConfigChangedEvent(settings);
         }

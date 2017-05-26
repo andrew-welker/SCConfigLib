@@ -1,4 +1,7 @@
-﻿using SC.SimplSharp.Config;
+﻿using System;
+using System.Linq;
+using Crestron.SimplSharp;
+using SC.SimplSharp.Config;
 using SCConfigSplus.JSON;
 using SCSplusConfig.Writers;
 
@@ -9,8 +12,7 @@ namespace SCSplusConfig
     /// </summary>
     public class EnvironmentConfigurationWriter
     {
-        private ConfigurationWriter<EnvironmentControls> _configWriter;
-        private JsonSettingsWriter _settingsWriter;
+        private string _fileName;
 
         /// <summary>
         /// Method to initialize the writer.
@@ -18,9 +20,7 @@ namespace SCSplusConfig
         /// <param name="path">File to save settings to.</param>
         public void Initialize(string path)
         {
-            _settingsWriter = new JsonSettingsWriter(path);
-
-            _configWriter = new ConfigurationWriter<EnvironmentControls>(_settingsWriter);
+            _fileName = path;
         }
 
         /// <summary>
@@ -29,7 +29,9 @@ namespace SCSplusConfig
         /// <param name="settings">Object to save</param>
         public void SaveSettings(EnvironmentControls settings)
         {
-            _configWriter.SaveSettings(settings);
+            var writer = new JsonSettingsWriter(_fileName);
+
+            writer.SaveSection(settings);
         }
     }
 }

@@ -2,28 +2,24 @@
 using SC.SimplSharp.Config;
 using SCConfigSplus.JSON;
 using SCConfigSplus.Readers;
+using SCSplusConfig.Delegates;
 using SSMono.IO;
 
 namespace SCSplusConfig
 {
     public class SourceConfigurationReader
     {
-        private const string SectionName = "Sources";
+        private string _sectionName;
+        private string _fileName;
 
-        private ConfigurationReader<List<Source>> _configurationReader;
-        private JsonSettingsReader _settingsReader;
         private FileSystemWatcher _watcher;
-        private List<Source> _sources = new List<Source>();
-
-        public delegate void SourcesConfigChangedDel(ushort index, Source source);
 
         public SourcesConfigChangedDel OnConfigurationChanged { get; set; }
 
-        public void Initialize(string path)
+        public void Initialize(string path, string sectionName)
         {
-            _settingsReader = new JsonSettingsReader(path);
-
-            _configurationReader = new ConfigurationReader<List<Source>>(_settingsReader);
+            _fileName = path;
+            _sectionName = sectionName;
 
             _watcher = new FileSystemWatcher();
 
@@ -32,9 +28,11 @@ namespace SCSplusConfig
 
         public void ReadSettings()
         {
-            _sources = _configurationReader.ReadSettings(SectionName);
+            var reader = new JsonSettingsReader(_fileName);
 
-            FireOnConfigChangedEvent(_sources);
+            var sources = reader.LoadSection<List<Source>>(_sectionName);
+
+            FireOnConfigChangedEvent(sources);
         }
 
         private void ConfigureFileSystemWatcher(string path)
@@ -61,12 +59,14 @@ namespace SCSplusConfig
                 return;
             }
 
-            var settings = _configurationReader.ReadSettings();
+            var reader = new JsonSettingsReader(_fileName);
 
-            FireOnConfigChangedEvent(settings);
+            var sources = reader.LoadSection<List<Source>>(_sectionName);
+
+            FireOnConfigChangedEvent(sources);
         }
 
-        private void FireOnConfigChangedEvent(List<Source> settings)
+        private void FireOnConfigChangedEvent(IList<Source> settings)
         {
             var handler = OnConfigurationChanged;
 

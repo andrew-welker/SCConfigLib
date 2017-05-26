@@ -43,7 +43,7 @@ STRING_OUTPUT Name[MaxNumberOfSources,MaxNumberOfSources];
   Parameters
   (Uncomment and declare parameters as needed)
 *******************************************************************************************/
-
+STRING_PARAMETER SectionName[128];
 /*******************************************************************************************
   Parameter Properties
   (Uncomment and declare parameter properties as needed)
@@ -66,7 +66,8 @@ STRING_OUTPUT Name[MaxNumberOfSources,MaxNumberOfSources];
 // LONG_INTEGER
 // SIGNED_INTEGER
 // SIGNED_LONG_INTEGER
-// STRING
+
+
 SourceConfigurationReader configReader;   
 /*******************************************************************************************
   Functions
@@ -110,7 +111,7 @@ Function Main()
 
 	Initialize();
 
-	configReader.Initialize(FilePath);
+	configReader.Initialize(FilePath,SectionName);
 
 	configReader.ReadSettings();
 }
