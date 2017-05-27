@@ -1,0 +1,294 @@
+/*******************************************************************************************
+  SIMPL+ Module Information
+  (Fill in comments below)
+*******************************************************************************************/
+/*
+Dealer Name:
+System Name:
+System Number:
+Programmer:
+Comments:
+*/
+
+/*******************************************************************************************
+  Compiler Directives
+  (Uncomment and declare compiler directives as needed)
+*******************************************************************************************/
+#ENABLE_DYNAMIC
+ #DEFINE_CONSTANT MaxNumberOfSources 16
+#DEFINE_CONSTANT TruncationError 32776
+#DEFAULT_VOLATILE
+#ENABLE_STACK_CHECKING
+#ENABLE_TRACE
+
+/*******************************************************************************************
+  Include Libraries
+  (Uncomment and include additional libraries as needed)
+*******************************************************************************************/
+   #USER_SIMPLSHARP_LIBRARY "SCConfigSplus"
+/*******************************************************************************************
+  DIGITAL, ANALOG and SERIAL INPUTS and OUTPUTS
+  (Uncomment and declare inputs and outputs as needed)
+*******************************************************************************************/
+ DIGITAL_INPUT  AddSource,RemoveSource,EditSource,Update,Save;
+ ANALOG_INPUT SourceToEdit;
+ ANALOG_INPUT Enable,ShareableSource,EnableSyncDetect;
+ STRING_INPUT SourceName[64], SourceInput[2];
+ STRING_INPUT FileName[128];
+                                
+ DIGITAL_OUTPUT ShowSave;
+ STRING_OUTPUT NumberOfSourcesText;
+        
+ ANALOG_OUTPUT SelectedSourceEnabled, SelectedSourceShareable, SelectedSourceEnableSyncDetect;
+ STRING_OUTPUT SelectedSourceName,SelectedSourceInput;
+                                
+ STRING_OUTPUT SourceNameText[MaxNumberOfSources],SourceInputText[MaxNumberOfSources];
+ ANALOG_OUTPUT SourceEnabled[MaxNumberofSources],SourceShareable[MaxNumberOfSources],SourceEnableSyncDetect[MaxNumberOfSources];
+                          
+STRING_PARAMETER SectionName[128];
+
+dynamic Source sources[1];
+
+SourceConfigurationReader reader;
+SourceConfigurationWriter writer;
+ STRING nameStore[128],inputStore[128];            
+/*******************************************************************************************
+  Functions
+  (Add any additional functions here)
+  Note:  Functions must be physically placed before the location in
+         the code that calls them.
+*******************************************************************************************/
+FUNCTION Initialize()
+{
+	RegisterDelegate(reader,OnConfigurationChanged,UpdateSourcesCallback);
+}
+
+SIGNED_INTEGER_FUNCTION ResizeSourceArray(integer newSize)
+{
+		integer status;
+		
+		print("ResizeSourceArray newSize: %u newSize + 2: %u\n", newSize, newSize + 1);
+
+		//Skipping the first element to allow for removal of all elements.
+		status = ResizeStructureArray(sources,newSize + 1);
+
+		if(status != 0 && status != TruncationError)
+		{
+			GenerateUserError("Unable to resize Source Array. Error %X",status);
+			return (-1);
+		}
+		else
+		{
+			GenerateUserNotice("Array resized successfully. New size: %u", SPlusHelpers.GetCurrentSourceCount(sources));
+			return (0);
+		}
+
+}
+
+callback FUNCTION UpdateSourcesCallback(integer index, Source source)
+{
+	integer i;
+    integer j;
+	//Skipping the first element in the S+ array. returned index is 0-based, so element 0 needs to go to element 2.
+	//If array is 'empty', writer.GetCurrentSourceCount(sources) will return 0. Array is really size 1, and needs to be
+	//size 2.
+	//i is for the source array;
+	i = index + 2;
+
+	//j is for the output array, which is still 1-based;
+	j = index + 1;
+
+	print("CurrentSize: %u Index: %u, i: %u\n",SPlusHelpers.GetCurrentSourceCount(sources),index,i);
+                
+	if(i > SPlusHelpers.GetCurrentSourceCount(sources))
+	{
+		//Using J here, as the function adds 1 internally to account for skipping the first one.
+		if(ResizeSourceArray(j) < 0)
+		{
+			return;
+		}
+	}	
+
+	sources[i] = source;
+
+	SourceInputText[j] = itoa(source.Input);
+	SourceNameText[j] = Source.Name;
+	SourceEnabled[j] = Source.Enabled;
+	SourceShareable[j] = Source.ShareableSource;
+	SourceEnableSyncDetect[j] = Source.EnableSyncDetect;
+}
+
+Function UpdateOutputs()
+{
+	integer i;
+	integer count;
+
+	count = SplusHelpers.GetCurrentSourceCount(sources);
+
+	NumberOfSourcesText = itoa(count);
+
+	/*2 sources
+	Source[2] = Source 1
+	Source[3] = Source 2
+	*/
+	
+	for(i = 1 to MaxNumberOfSources)
+	{
+		if(i <= count)
+		{
+			SourceInputText[i] = itoa(sources[i + 1].Input);
+			SourceNameText[i] = sources[i + 1].Name;
+			SourceEnabled[i] = sources[i + 1].Enabled;
+			SourceShareable[i] = sources[i + 1].ShareableSource;
+			SourceEnableSyncDetect[i] = sources[i + 1].EnableSyncDetect;
+		}
+		else
+		{
+			SourceInputText[i] = "";
+			SourceNameText[i] = "";
+			SourceEnabled[i] = 0;
+			SourceShareable[i] = 0;
+			SourceEnableSyncDetect[i] = 0;
+		}
+	}	
+}
+
+
+/*******************************************************************************************
+  Event Handlers
+  (Uncomment and declare additional event handlers as needed)
+*******************************************************************************************/
+CHANGE SourceToEdit
+{
+	integer i;
+	
+	//leaving element 1 empty. First element is actually element 2;
+	i = SourceToEdit + 1;
+
+	SelectedSourceInput = itoa(sources[i].Input);
+	SelectedSourceName = sources[i].Name;
+	SelectedSourceEnabled = sources[i].Enabled;
+	SelectedSourceShareable = sources[i].ShareableSource;	
+	SelectedSourceEnableSyncDetect = sources[i].EnableSyncDetect;
+}    
+
+PUSH AddSource
+{
+	Source newSource;
+
+	integer currentCount;
+
+	newSource.Name = nameStore;
+	newSource.Input = atoi(inputStore);
+	newSource.Enabled = Enable;
+	newSource.ShareableSource = ShareableSource;
+	newSource.EnableSyncDetect = EnableSyncDetect;
+    
+	/*3 sources, adding 1
+	currentCount = 3
+	source[2] = source 1
+	source[3] = source 2
+	source[4] = source 3
+	*/
+
+	currentCount = SPlusHelpers.GetCurrentSourceCount(sources);
+
+	print("CurrentCount: %u CurrentCount + 1: %u\n", currentCount, currentCount + 1);
+                                         
+	//Skipping the first 2 elements. If CurrentCount is 0, actual S+ array size is 2. Need it to be one bigger, so we add 3
+	if(ResizeSourceArray(currentCount + 1) < 0)
+	{
+		GenerateUserError("Unable to add new source");
+		return;
+	}
+
+	sources[currentCount + 2] = newSource;
+
+	UpdateOutputs();	
+
+	ShowSave = 1;	
+}
+
+PUSH EditSource
+{
+	integer i;
+
+	//leaving element 1 empty. First element is actually element 2;	
+	i = SourceToEdit + 1;
+
+	sources[i].Name= nameStore;
+	sources[i].Input = atoi(inputStore);
+	sources[i].Enabled = Enable;
+	sources[i].ShareableSource = ShareableSource;
+	sources[i].EnableSyncDetect = EnableSyncDetect;
+
+	ShowSave = 1;
+}
+
+PUSH RemoveSource
+{
+	integer sourceToRemove;
+	Source tempSource;
+                                      
+	//leaving element 1 empty. First element is actually element 2. Addition takes place in S#
+    sourceToRemove = SourceToEdit;
+
+    SPlusHelpers.RemoveSource(sourceToRemove, sources);
+
+	UpdateOutputs();
+	
+	ShowSave = 1;
+}
+
+push Update
+{
+	reader.ReadSettings();
+}
+
+push Save
+{
+	try
+	{
+		if(ShowSave = 1)
+		{
+			writer.SaveSettings(sources);
+		}
+	}
+	catch
+	{
+		trace("Exception while saving configuration: %s", GetExceptionMessage());
+		GenerateUserError("Exception while saving configuration: %s", GetExceptionMessage());
+	}
+
+	ShowSave = 0;
+}
+
+Change SourceName
+{
+	nameStore = SourceName;
+}
+
+Change SourceInput
+{
+	inputStore = SourceInput;
+}
+
+/*******************************************************************************************
+  Main()
+  Uncomment and place one-time startup code here
+  (This code will get called when the system starts up)
+*******************************************************************************************/
+
+Function Main()
+{
+     WaitForInitializationComplete();
+
+	Initialize();
+	
+	reader.Initialize(FileName, sectionName);
+	reader.ReadSettings();
+	
+	writer.Initialize(FileName, sectionName);
+}
+
+
