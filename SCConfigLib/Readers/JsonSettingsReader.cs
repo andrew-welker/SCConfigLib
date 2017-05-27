@@ -154,7 +154,7 @@ namespace SCConfigSplus.Readers
 
             try
             {
-                settingsData = JObject.Parse(json);
+                settingsData = JToken.Parse(json);
             }
             catch (JsonReaderException ex)
             {

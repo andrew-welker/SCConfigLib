@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Text;
+using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SC.SimplSharp.Config;
 
@@ -108,28 +110,57 @@ namespace SCSplusConfig.Writers
         /// <param name="settings">Object to save</param>
         /// <param name="section">Section name to update or add</param>
         /// <returns>JSON version of the object to save</returns>
-        private JObject UpdateExistingJson(object settings, string section)
+        private JToken UpdateExistingJson(object settings, string section)
         {
             var jsonSection = JToken.FromObject(settings);
 
-            string existingJson;
+            var existingJson = ReadFromFile();
 
-            using (var stream = new StreamReader(_settingsFilePath))
+            JToken settingsData;
+
+            try
             {
-                existingJson = stream.ReadToEnd();
+                settingsData = JToken.Parse(existingJson);
+            }
+            catch (JsonReaderException ex)
+            {
+                ErrorLog.Exception("Exception parsing JSON to JToken", ex); 
+  
+                settingsData = new JObject();
             }
 
-            var settingsData = JObject.Parse(existingJson);
-
-            if (settingsData[section] == null)
+            if (settingsData.SelectToken(section) == null)
             {
-                settingsData.Add(section, jsonSection);
+                settingsData.AddAfterSelf(settings);
             }
             else
             {
                 settingsData[section] = jsonSection;
             }
             return settingsData;
+        }
+
+        private string ReadFromFile()
+        {
+            string existingJson;
+            try
+            {
+                FileOperations.FileCriticalSection.Enter();
+                using (var stream = new StreamReader(_settingsFilePath))
+                {
+                    existingJson = stream.ReadToEnd();
+                }
+            }
+            catch (IOException ex)
+            {
+                ErrorLog.Error("Exception opening config file to write.", ex);
+                existingJson = String.Empty;
+            }
+            finally
+            {
+                FileOperations.FileCriticalSection.Leave();
+            }
+            return existingJson;
         }
 
         /// <summary>
@@ -149,12 +180,12 @@ namespace SCSplusConfig.Writers
         /// Write the object to the specified file. If another object is using the file, blocks until it is available.
         /// </summary>
         /// <param name="jo">Object to write to file</param>
-        private void WriteToFile(JObject jo)
+        private void WriteToFile(JToken jo)
         {
             try
             {
                 FileOperations.FileCriticalSection.Enter();
-                using (var stream = File.OpenWrite(_settingsFilePath))
+                using (var stream = File.Open(_settingsFilePath,FileMode.Truncate))
                 {
                     stream.Write(jo.ToString(), Encoding.Default);
                 }

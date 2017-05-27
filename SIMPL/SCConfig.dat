@@ -1,7 +1,4 @@
 {
-  "NumberOfDisplays": 1,
-  "NumberOfInputs": 1,
-  "NumberOfCameras": 1,
   "EnvironmentControls": {
     "Shades": 1,
     "Lighting": 1
