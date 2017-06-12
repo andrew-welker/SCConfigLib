@@ -4,9 +4,8 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using SC.SimplSharp.Config;
 
-namespace SCSplusConfig.Writers
+namespace SCConfigLib.Writers
 {
     /// <summary>
     /// Class to write settings to a file in a JSON format. Implements ISettingsWriter

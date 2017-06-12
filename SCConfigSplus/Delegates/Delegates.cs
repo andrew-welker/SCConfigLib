@@ -1,6 +1,6 @@
 ﻿using SCConfigSplus.JSON;
 
-namespace SCSplusConfig.Delegates
+namespace SCConfigSPlus.Delegates
 {
     /// <summary>
     /// Delegate for S+ OnConfigurationChanged event for a list object

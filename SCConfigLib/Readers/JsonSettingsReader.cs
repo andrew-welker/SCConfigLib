@@ -4,10 +4,9 @@ using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using SC.SimplSharp.Config;
 using Activator = Crestron.SimplSharp.Reflection.Activator;
 
-namespace SCConfigSplus.Readers
+namespace SCConfigLib.Readers
 {
     public class JsonSettingsReader:ISettingsReader
     {

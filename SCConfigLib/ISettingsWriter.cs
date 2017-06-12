@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SC.SimplSharp.Config
+namespace SCConfigLib
 {
     public interface ISettingsWriter
     {

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCConfigLib", "SCConfigLib\SCConfigLib.csproj", "{6D78E91C-1A98-4C90-841B-388BAA53DC5A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCConfigSPlus", "SCSplusConfig\SCConfigSPlus.csproj", "{F4D9C405-9724-4DB6-9829-809C909CE8A8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCConfigSPlus", "SCConfigSPlus\SCConfigSPlus.csproj", "{F4D9C405-9724-4DB6-9829-809C909CE8A8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

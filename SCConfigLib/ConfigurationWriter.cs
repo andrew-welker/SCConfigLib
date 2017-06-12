@@ -1,4 +1,4 @@
-﻿namespace SC.SimplSharp.Config
+﻿namespace SCConfigLib
 {
     [System.Obsolete]
     public class ConfigurationWriter<T> where T : class, new()

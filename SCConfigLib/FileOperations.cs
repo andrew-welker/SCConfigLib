@@ -1,6 +1,6 @@
 ﻿using Crestron.SimplSharp;
 
-namespace SC.SimplSharp.Config
+namespace SCConfigLib
 {
     public static class FileOperations
     {

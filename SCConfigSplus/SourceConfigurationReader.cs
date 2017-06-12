@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
-using SC.SimplSharp.Config;
+using SCConfigLib.Readers;
+using SCConfigSPlus.Delegates;
 using SCConfigSplus.JSON;
-using SCConfigSplus.Readers;
-using SCSplusConfig.Delegates;
 using SSMono.IO;
 
-namespace SCSplusConfig
+namespace SCConfigSPlus
 {
     public class SourceConfigurationReader
     {
@@ -14,8 +13,16 @@ namespace SCSplusConfig
 
         private FileSystemWatcher _watcher;
 
+        /// <summary>
+        /// Delegate to update SIMPL Configuration
+        /// </summary>
         public SourcesConfigChangedDel OnConfigurationChanged { get; set; }
 
+        /// <summary>
+        /// Method to intialize the reader
+        /// </summary>
+        /// <param name="path">File to save settings to</param>
+        /// <param name="sectionName">Section name to save settings in</param>
         public void Initialize(string path, string sectionName)
         {
             _fileName = path;
@@ -23,9 +30,16 @@ namespace SCSplusConfig
 
             _watcher = new FileSystemWatcher();
 
-            ConfigureFileSystemWatcher(path);
+            _watcher.ConfigureWatcher(path);
+
+            _watcher.Changed += OnWatcherChanged;
+
+            _watcher.EnableRaisingEvents = true;
         }
 
+        /// <summary>
+        /// Method to read the Source Settings
+        /// </summary>
         public void ReadSettings()
         {
             var reader = new JsonSettingsReader(_fileName);
@@ -35,23 +49,11 @@ namespace SCSplusConfig
             FireOnConfigChangedEvent(sources);
         }
 
-        private void ConfigureFileSystemWatcher(string path)
-        {
-            var directory = Path.GetDirectoryName(path);
-            var fileName = Path.GetFileName(path);
-
-            _watcher = new FileSystemWatcher
-            {
-                Path = directory,
-                NotifyFilter = NotifyFilters.LastWrite,
-                Filter = fileName
-            };
-
-            _watcher.Changed += OnWatcherChanged;
-
-            _watcher.EnableRaisingEvents = true;
-        }
-
+        /// <summary>
+        /// Updates the stored configuration when the FileSystemWatcher determines that the file has changed.
+        /// </summary>
+        /// <param name="sender">Watcher that fired the event</param>
+        /// <param name="e">Arguments</param>
         private void OnWatcherChanged(object sender, FileSystemEventArgs e)
         {
             if (e.ChangeType != WatcherChangeTypes.Changed)
@@ -66,6 +68,10 @@ namespace SCSplusConfig
             FireOnConfigChangedEvent(sources);
         }
 
+        /// <summary>
+        /// Fires the event for S+ to send the data to the rest of the program.
+        /// </summary>
+        /// <param name="settings">Object to send to S+</param>
         private void FireOnConfigChangedEvent(IList<Source> settings)
         {
             var handler = OnConfigurationChanged;

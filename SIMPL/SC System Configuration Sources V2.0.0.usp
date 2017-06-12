@@ -14,10 +14,17 @@ Comments:
   Compiler Directives
   (Uncomment and declare compiler directives as needed)
 *******************************************************************************************/
-#DEFINE_CONSTANT MaxNumberOfSources 16
+#analog_serial_expand
+#define_constant MaxNumberOfSources 16
+#category "46" "custom"
+#crestron_library
+#crestron_simplsharp_library
 #DEFAULT_VOLATILE
+#default_nonvolatile
 #ENABLE_STACK_CHECKING
 #ENABLE_TRACE
+
+"test"
 
 /*******************************************************************************************
   Include Libraries
@@ -48,7 +55,8 @@ STRING_PARAMETER SectionName[128];
   Parameter Properties
   (Uncomment and declare parameter properties as needed)
 *******************************************************************************************/
-
+#begin_parameter_properties SectionName
+#end_parameter_properties
 /*******************************************************************************************
   Structure Definitions
   (Uncomment and define structure definitions as needed)

@@ -1,9 +1,9 @@
-﻿using SCConfigSplus.JSON;
-using SCConfigSplus.Readers;
-using SCSplusConfig.Delegates;
+﻿using SCConfigLib.Readers;
+using SCConfigSPlus.Delegates;
+using SCConfigSplus.JSON;
 using SSMono.IO;
 
-namespace SCSplusConfig
+namespace SCConfigSPlus
 {
     
 
@@ -19,7 +19,7 @@ namespace SCSplusConfig
 
 
         /// <summary>
-        /// Method to initialize the system.
+        /// Method to initialize the Reader.
         /// </summary>
         /// <param name="path">Path to file to be read</param>
         public void Initialize(string path)
@@ -28,13 +28,16 @@ namespace SCSplusConfig
 
             _watcher = new FileSystemWatcher();
 
-            ConfigureFileSystemWatcher(path);
+            _watcher.ConfigureWatcher(path);
+
+            _watcher.Changed += OnWatcherChanged;
+
+            _watcher.EnableRaisingEvents = true;
         }
 
         /// <summary>
         /// Method to read the EnvironmentControls settings
         /// </summary>
-        /// <returns>EnvironmentControls indicating the stored settings</returns>
         public void ReadSettings()
         {
             var reader = new JsonSettingsReader(_filePath);
@@ -43,22 +46,6 @@ namespace SCSplusConfig
             FireOnConfigChangedEvent(settings);
         }
 
-        private void ConfigureFileSystemWatcher(string path)
-        {
-            var directory = Path.GetDirectoryName(path);
-            var fileName = Path.GetFileName(path);
-
-            _watcher = new FileSystemWatcher
-            {
-                Path = directory,
-                NotifyFilter = NotifyFilters.LastWrite,
-                Filter = fileName
-            };
-
-            _watcher.Changed += OnWatcherChanged;
-
-            _watcher.EnableRaisingEvents = true;
-        }
 
         /// <summary>
         /// Updates the stored configuration when the FileSystemWatcher determines that the file has changed.

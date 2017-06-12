@@ -1,14 +1,10 @@
-﻿using System;
-using System.Linq;
-using Crestron.SimplSharp;
-using SC.SimplSharp.Config;
+﻿using SCConfigLib.Writers;
 using SCConfigSplus.JSON;
-using SCSplusConfig.Writers;
 
-namespace SCSplusConfig
+namespace SCConfigSPlus
 {
     /// <summary>
-    /// Class to write 
+    /// Class to write environment configurations
     /// </summary>
     public class EnvironmentConfigurationWriter
     {
@@ -17,7 +13,7 @@ namespace SCSplusConfig
         /// <summary>
         /// Method to initialize the writer.
         /// </summary>
-        /// <param name="path">File to save settings to.</param>
+        /// <param name="path">File to save settings to</param>
         public void Initialize(string path)
         {
             _fileName = path;
