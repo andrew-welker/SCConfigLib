@@ -1,4 +1,4 @@
-﻿namespace SCConfigSplus.JSON
+﻿namespace SCConfigSPlus.JSON
 {
     /// <summary>
     /// Class for describing a display. Contains information on type, Control, and where the device is connected to the system.
@@ -34,5 +34,10 @@
         /// Output. This is the output of the switcher that the device is connected to.
         /// </summary>
         public ushort Output { get; set; }
+
+        /// <summary>
+        /// Controllable. If this is greater than 0, the destination is controllable
+        /// </summary>
+        public ushort Controllable { get; set; }
     }
 }

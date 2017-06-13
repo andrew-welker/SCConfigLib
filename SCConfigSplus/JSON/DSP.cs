@@ -1,4 +1,4 @@
-﻿namespace SCConfigSplus.JSON
+﻿namespace SCConfigSPlus.JSON
 {
     /// <summary>
     /// Class for describing a DSP. Contains information on type, communications, and Audio conferencing.
@@ -26,8 +26,8 @@
         public ushort Port { get; set; }
 
         /// <summary>
-        /// Audio Conferencing. If true, the system has Audio Conferencing.
+        /// Audio Conferencing. If greater than 0, the system has Audio Conferencing.
         /// </summary>
-        public bool AudioConference { get; set; }
+        public ushort AudioConference { get; set; }
     }
 }

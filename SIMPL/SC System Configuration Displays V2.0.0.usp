@@ -18,81 +18,52 @@ Comments:
 #DEFAULT_VOLATILE
 #ENABLE_STACK_CHECKING
 #ENABLE_TRACE
-#HELP_BEGIN
-   (add additional lines of help lines)
-#HELP_END
-
 
 /*******************************************************************************************
   Include Libraries
   (Uncomment and include additional libraries as needed)
 *******************************************************************************************/
-   #USER_SIMPLSHARP_LIBRARY "SCConfigLib"
+   #USER_SIMPLSHARP_LIBRARY "SCConfigSPlus"
 /*******************************************************************************************
   DIGITAL, ANALOG and SERIAL INPUTS and OUTPUTS
   (Uncomment and declare inputs and outputs as needed)
 *******************************************************************************************/
+ STRING_INPUT FileName[128];  
 
- 
- ANALOG_OUTPUT NumberOfDisplaysAnalog;
- 
-
- ANALOG_OUTPUT CommunicationsTypeAnalog[MaxNumberOfDisplays],IpPortAnalog[MaxNumberOfDisplays],OutputAnalog[MaxNumberOfDisplays],DisplayBrandAnalog[MaxNumberOfDisplays];
- STRING_OUTPUT IpAddressText[MaxNumberOfDisplays];
+ANALOG_OUTPUT CommunicationsType[MaxNumberOfDisplays],IpPort[MaxNumberOfDisplays],Output[MaxNumberOfDisplays],
+				DisplayBrand[MaxNumberOfDisplays], Controllable[MaxNumberOfDisplays];
+ STRING_OUTPUT DisplayName[MaxNumberOfDisplays],IpAddress[MaxNumberOfDisplays];
  
 /*******************************************************************************************
   Parameters
   (Uncomment and declare parameters as needed)
 *******************************************************************************************/
- INTEGER_PARAMETER NumberOfDisplays;
-// SIGNED_INTEGER_PARAMETER
-// LONG_INTEGER_PARAMETER
-// SIGNED_LONG_INTEGER_PARAMETER
-// STRING_PARAMETER
-
+ STRING_PARAMETER SectionName[128];
 /*******************************************************************************************
   Parameter Properties
   (Uncomment and declare parameter properties as needed)
 *******************************************************************************************/
-
-#BEGIN_PARAMETER_PROPERTIES NumberOfDisplays
-    propValidUnits = unitDecimal;
-    propDefaultUnit = unitDecimal;
-#END_PARAMETER_PROPERTIES
-
-               
-DisplayConfigurationUpdater configUpdater;
+DisplayConfigurationReader _configReader;
 /*******************************************************************************************
   Functions
   (Add any additional functions here)
   Note:  Functions must be physically placed before the location in
          the code that calls them.
 *******************************************************************************************/
-FUNCTION Initialize()
+callback FUNCTION OnConfigChangedHandler(integer index, Display display)
 {
-	configUpdater.Initialize(NumberOfDisplays);
-	RegisterDelegate(configUpdater,UpdateDisplayInformation,UpdateDisplayInformationCallback);
-	RegisterDelegate(configUpdater,UpdateCount,UpdateDisplayCountCallback);
+	integer i;
+
+	i = index + 1;
+                 
+	DisplayName[i] = display.Name;
+	DisplayBrand[i] = display.Type;
+	CommunicationsType[i] = display.CommunicationsType;
+	IpAddress[i] = display.IpAddress;
+	IpPort[i] = display.Port;
+	Output[i] = display.Output;
+	Controllable[i] = display.Controllable;	
 }
-
-callback FUNCTION UpdateDisplayInformationCallback(integer index, Display information)
-{
-	Display displayToShow;
-
-	displayToShow = information;
-
-	DisplayBrandAnalog[index] = displayToShow.Manufacturer;
-	CommunicationsTypeAnalog[index] = displayToShow.CommunicationsType;
-	IpAddressText[index] = displayToShow.IpAddress;
-	IpPortAnalog[index] = displayToShow.Port;
-	OutputAnalog[index] = displayToShow.Output;	
-}
-
-callback FUNCTION UpdateDisplayCountCallback(integer count)
-{
-	NumberOfDisplaysAnalog = count;
-}
-
 /*******************************************************************************************
   Main()
   Uncomment and place one-time startup code here
@@ -103,7 +74,11 @@ Function Main()
 {
      WaitForInitializationComplete();
 
-	Initialize();
+	registerdelegate(_configReader,OnConfigurationChanged,OnConfigChangedHandler);
+
+	_configReader.Initialize(fileName, SectionName);
+
+	_configReader.ReadSettings();
 }
 
 

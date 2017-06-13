@@ -1,4 +1,4 @@
-﻿namespace SCConfigSplus.JSON
+﻿namespace SCConfigSPlus.JSON
 {
     /// <summary>
     /// Class for containing information about a Video Conference unit. Contains information on Type, communications, inputs, and outputs.

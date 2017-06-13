@@ -116,6 +116,10 @@ namespace SCConfigLib.Readers
                 : JsonConvert.DeserializeObject(settingsSection.ToString(), type, JsonSerializerSettings);
         }
 
+        /// <summary>
+        /// Read the file
+        /// </summary>
+        /// <returns>JSON string from file</returns>
         private string ReadFile()
         {
             string json;

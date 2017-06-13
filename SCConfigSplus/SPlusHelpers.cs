@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using Crestron.SimplSharp;
-using SCConfigSplus.JSON;
+using SCConfigSPlus.JSON;
 
-namespace SCConfigSplus
+namespace SCConfigSPlus
 {
     public static class SPlusHelpers
     {
@@ -58,6 +58,50 @@ namespace SCConfigSplus
             list.Add(new Source());
 
             sources = list.ToArray();
+        }
+
+        /// <summary>
+        /// Method to add an existing source to the sources array
+        /// </summary>
+        /// <param name="sources">Array to add item to</param>
+        /// <param name="sourceToAdd">Item to add</param>
+        public static void AddNewSource(ref Source[] sources, Source sourceToAdd)
+        {
+            var list = sources.ToList();
+
+            if (list.Contains(sourceToAdd))
+            {
+                return;
+            }
+
+            list.Add(sourceToAdd);
+
+            sources = list.ToArray();
+        }
+
+        /// <summary>
+        /// Method to edit S+ array for ease of display. Removes index 1 from the array
+        /// </summary>
+        /// <param name="sources"></param>
+        public static void GetArrayForDisplay(ref Source[] sources)
+        {
+            var list = sources.ToList();
+
+            list.RemoveAt(1);
+
+            sources = list.ToArray();
+        }
+
+        /// <summary>
+        /// Method to copy an S+ array
+        /// </summary>
+        /// <param name="source">Array to copy from</param>
+        /// <param name="destination">Array to copy to</param>
+        public static void CopyArray(Source[] source, ref Source[] destination)
+        {
+            var list = source.ToList();
+
+            destination = list.ToArray();
         }
     }
 }

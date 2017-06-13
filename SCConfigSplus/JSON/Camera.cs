@@ -1,4 +1,4 @@
-﻿namespace SCConfigSplus.JSON
+﻿namespace SCConfigSPlus.JSON
 {
     /// <summary>
     /// Class for describing a camera. Contains information about the manufacture, method of control, and where the device is connected to the system.

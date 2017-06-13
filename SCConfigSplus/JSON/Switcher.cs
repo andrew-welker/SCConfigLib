@@ -1,4 +1,4 @@
-﻿namespace SCConfigSplus.JSON
+﻿namespace SCConfigSPlus.JSON
 {
     /// <summary>
     /// Class for containing information about a Switcher. Contains Type, IP Address, and if the Sync detection is enabled.

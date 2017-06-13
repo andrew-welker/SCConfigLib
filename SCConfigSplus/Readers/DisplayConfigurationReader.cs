@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using SCConfigLib.Readers;
 using SCConfigSPlus.Delegates;
-using SCConfigSplus.JSON;
+using SCConfigSPlus.JSON;
 using SSMono.IO;
 
 namespace SCConfigSPlus
 {
-    public class SourceConfigurationReader
+    public class DisplayConfigurationReader
     {
         private string _sectionName;
         private string _fileName;
@@ -16,7 +16,7 @@ namespace SCConfigSPlus
         /// <summary>
         /// Delegate to update SIMPL Configuration
         /// </summary>
-        public SourcesConfigChangedDel OnConfigurationChanged { get; set; }
+        public DisplaysConfigChangedDel OnConfigurationChanged { get; set; }
 
         /// <summary>
         /// Method to intialize the reader
@@ -44,7 +44,7 @@ namespace SCConfigSPlus
         {
             var reader = new JsonSettingsReader(_fileName);
 
-            var sources = reader.LoadSection<List<Source>>(_sectionName);
+            var sources = reader.LoadSection<List<Display>>(_sectionName);
 
             FireOnConfigChangedEvent(sources);
         }
@@ -61,18 +61,14 @@ namespace SCConfigSPlus
                 return;
             }
 
-            var reader = new JsonSettingsReader(_fileName);
-
-            var sources = reader.LoadSection<List<Source>>(_sectionName);
-
-            FireOnConfigChangedEvent(sources);
+            ReadSettings();
         }
 
         /// <summary>
         /// Fires the event for S+ to send the data to the rest of the program.
         /// </summary>
         /// <param name="settings">Object to send to S+</param>
-        private void FireOnConfigChangedEvent(IList<Source> settings)
+        private void FireOnConfigChangedEvent(IList<Display> settings)
         {
             var handler = OnConfigurationChanged;
 

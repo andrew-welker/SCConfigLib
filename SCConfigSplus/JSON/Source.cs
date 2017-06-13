@@ -1,4 +1,4 @@
-﻿namespace SCConfigSplus.JSON
+﻿namespace SCConfigSPlus.JSON
 {
     /// <summary>
     /// Class for describing a source in a system. Contains information on the input, name, whether the source is shareable over VTC, and whether the source should route on sync detect.
@@ -29,5 +29,10 @@
         /// Enable Sync Detection. If true, this source can be automatically routed when sync is detected.
         /// </summary>
         public ushort EnableSyncDetect { get; set; }
+
+        /// <summary>
+        /// Icon. This is the name of the Icon to show on the UI
+        /// </summary>
+        public string Icon { get; set; }
     }
 }

@@ -23,13 +23,15 @@ Comments:
   (Uncomment and include additional libraries as needed)
 *******************************************************************************************/
                     
-#USER_SIMPLSHARP_LIBRARY "SC.SimplSharp.Utilities"
+#USER_SIMPLSHARP_LIBRARY "SCConfigSPlus"
 /*******************************************************************************************
   DIGITAL, ANALOG and SERIAL INPUTS and OUTPUTS
   (Uncomment and declare inputs and outputs as needed)
 *******************************************************************************************/
- ANALOG_OUTPUT DspTypeOut,CommunicationsTypeOut,PortOutAnalog,AudioConferencingEnabledOut;
- STRING_OUTPUT IpAddressOut;
+ STRING_INPUT FileName[128];
+
+ ANALOG_OUTPUT DspType,CommunicationsType,Port,AudioConferencingEnabled;
+ STRING_OUTPUT IpAddress;
 
 /*******************************************************************************************
   SOCKETS
@@ -59,7 +61,7 @@ Comments:
   Note:  Be sure to initialize all declared STRING variables as needed
          For example, in Function Main: myString = "";
 *******************************************************************************************/
- DspConfigurationUpdater configUpdater;
+ DspConfigurationReader configReader;
 /*******************************************************************************************
   Functions
   (Add any additional functions here)
@@ -68,22 +70,21 @@ Comments:
 *******************************************************************************************/
 FUNCTION Initialize()
 {
-	RegisterDelegate(configUpdater,UpdateDspInformation,UpdateDspInformationCallback);
+	RegisterEvent(configReader,OnConfigurationChanged,OnConfigChangedCallback);
 }
  
-callback FUNCTION UpdateDspInformationCallback(Dsp config, integer audioConference)
+eventhandler OnConfigChangedCallback(DspConfigurationReader reader, Dsp config)
 {
 	integer tempAudioConference;
 	Dsp tempDsp;
 
-	tempAudioConference = audioConference;
 	tempDsp = config;
 
-	DspTypeOut = tempDsp.Type;
-	CommunicationsTypeOut = tempDsp.CommunicationsType;
-	IpAddressOut = tempDsp.IpAddress;
-	PortOutAnalog = tempDsp.Port;
-	AudioConferencingEnabledOut = tempaudioConference;
+	DspType = tempDsp.Type;
+	CommunicationsType = tempDsp.CommunicationsType;
+	IpAddress = tempDsp.IpAddress;
+	Port = tempDsp.Port;
+	AudioConferencingEnabled = tempDsp.AudioConference;
 }
 
 /*******************************************************************************************
@@ -99,7 +100,12 @@ callback FUNCTION UpdateDspInformationCallback(Dsp config, integer audioConferen
 Function Main()
 {
      WaitForInitializationComplete();
+
 	Initialize();
+
+	configReader.Initialize(FileName);
+	
+	configReader.ReadSettings();
 }
 
 

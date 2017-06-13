@@ -1,30 +1,32 @@
-﻿using SCConfigLib.Readers;
+﻿using System.Collections.Generic;
+using SCConfigLib.Readers;
 using SCConfigSPlus.Delegates;
-using SCConfigSplus.JSON;
+using SCConfigSPlus.JSON;
 using SSMono.IO;
 
 namespace SCConfigSPlus
 {
-    
-
-    public class EnvironmentConfigurationReader
+    public class SourceConfigurationReader
     {
-        private string _filePath;
+        private string _sectionName;
+        private string _fileName;
+
         private FileSystemWatcher _watcher;
 
         /// <summary>
-        /// Event to update configuration when the file changes.
+        /// Delegate to update SIMPL Configuration
         /// </summary>
-        public event EnvControlsConfigChangedDel OnConfigurationChanged;
-
+        public SourcesConfigChangedDel OnConfigurationChanged { get; set; }
 
         /// <summary>
-        /// Method to initialize the Reader.
+        /// Method to intialize the reader
         /// </summary>
-        /// <param name="path">Path to file to be read</param>
-        public void Initialize(string path)
+        /// <param name="path">File to save settings to</param>
+        /// <param name="sectionName">Section name to save settings in</param>
+        public void Initialize(string path, string sectionName)
         {
-            _filePath = path;
+            _fileName = path;
+            _sectionName = sectionName;
 
             _watcher = new FileSystemWatcher();
 
@@ -36,16 +38,16 @@ namespace SCConfigSPlus
         }
 
         /// <summary>
-        /// Method to read the EnvironmentControls settings
+        /// Method to read the Source Settings
         /// </summary>
         public void ReadSettings()
         {
-            var reader = new JsonSettingsReader(_filePath);
-            var settings = reader.LoadSection<EnvironmentControls>();
+            var reader = new JsonSettingsReader(_fileName);
 
-            FireOnConfigChangedEvent(settings);
+            var sources = reader.LoadSection<List<Source>>(_sectionName);
+
+            FireOnConfigChangedEvent(sources);
         }
-
 
         /// <summary>
         /// Updates the stored configuration when the FileSystemWatcher determines that the file has changed.
@@ -59,25 +61,25 @@ namespace SCConfigSPlus
                 return;
             }
 
-            var reader = new JsonSettingsReader(_filePath);
-
-            var settings = reader.LoadSection<EnvironmentControls>();
-
-            FireOnConfigChangedEvent(settings);
+            ReadSettings();
         }
-
 
         /// <summary>
         /// Fires the event for S+ to send the data to the rest of the program.
         /// </summary>
         /// <param name="settings">Object to send to S+</param>
-        private void FireOnConfigChangedEvent(EnvironmentControls settings)
+        private void FireOnConfigChangedEvent(IList<Source> settings)
         {
-            var onFileChangedHandler = OnConfigurationChanged;
+            var handler = OnConfigurationChanged;
 
-            if (onFileChangedHandler != null)
+            if (OnConfigurationChanged == null)
             {
-                onFileChangedHandler(this, settings);
+                return;
+            }
+
+            for (ushort i = 0; i < settings.Count; i++)
+            {
+                handler(i, settings[i]);
             }
         }
     }

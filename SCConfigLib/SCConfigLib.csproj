@@ -80,6 +80,7 @@
     <Compile Include="ISettingsWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Readers\JsonSettingsReader.cs" />
+    <Compile Include="Writers\ConfigurationWriterBase.cs" />
     <Compile Include="Writers\JsonSettingsWriter.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>

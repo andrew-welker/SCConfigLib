@@ -25,7 +25,7 @@ Comments:
   Include Libraries
   (Uncomment and include additional libraries as needed)
 *******************************************************************************************/
-   #USER_SIMPLSHARP_LIBRARY "SCConfigSplus"
+   #USER_SIMPLSHARP_LIBRARY "SCConfigSPlus"
 /*******************************************************************************************
   DIGITAL, ANALOG and SERIAL INPUTS and OUTPUTS
   (Uncomment and declare inputs and outputs as needed)
@@ -67,7 +67,7 @@ SIGNED_INTEGER_FUNCTION ResizeSourceArray(integer newSize)
 {
 		integer status;
 		
-		print("ResizeSourceArray newSize: %u newSize + 2: %u\n", newSize, newSize + 1);
+		//print("ResizeSourceArray newSize: %u newSize + 2: %u\n", newSize, newSize + 1);
 
 		//Skipping the first element to allow for removal of all elements.
 		status = ResizeStructureArray(sources,newSize + 1);
@@ -98,7 +98,7 @@ callback FUNCTION UpdateSourcesCallback(integer index, Source source)
 	//j is for the output array, which is still 1-based;
 	j = index + 1;
 
-	print("CurrentSize: %u Index: %u, i: %u\n",SPlusHelpers.GetCurrentSourceCount(sources),index,i);
+	//print("CurrentSize: %u Index: %u, i: %u\n",SPlusHelpers.GetCurrentSourceCount(sources),index,i);
                 
 	if(i > SPlusHelpers.GetCurrentSourceCount(sources))
 	{
@@ -122,8 +122,13 @@ Function UpdateOutputs()
 {
 	integer i;
 	integer count;
+	Source tempArray[1];
 
 	count = SplusHelpers.GetCurrentSourceCount(sources);
+
+	SPlusHelpers.CopyArray(sources,tempArray);
+
+	SPlusHelpers.GetArrayForDisplay(tempArray);
 
 	NumberOfSourcesText = itoa(count);
 
@@ -136,11 +141,11 @@ Function UpdateOutputs()
 	{
 		if(i <= count)
 		{
-			SourceInputText[i] = itoa(sources[i + 1].Input);
-			SourceNameText[i] = sources[i + 1].Name;
-			SourceEnabled[i] = sources[i + 1].Enabled;
-			SourceShareable[i] = sources[i + 1].ShareableSource;
-			SourceEnableSyncDetect[i] = sources[i + 1].EnableSyncDetect;
+			SourceInputText[i] = itoa(tempArray[i].Input);
+			SourceNameText[i] = tempArray[i].Name;
+			SourceEnabled[i] = tempArray[i].Enabled;
+			SourceShareable[i] = tempArray[i].ShareableSource;
+			SourceEnableSyncDetect[i] = tempArray[i].EnableSyncDetect;
 		}
 		else
 		{
@@ -176,7 +181,7 @@ PUSH AddSource
 {
 	Source newSource;
 
-	integer currentCount;
+	//integer currentCount;
 
 	newSource.Name = nameStore;
 	newSource.Input = atoi(inputStore);
@@ -191,9 +196,7 @@ PUSH AddSource
 	source[4] = source 3
 	*/
 
-	currentCount = SPlusHelpers.GetCurrentSourceCount(sources);
-
-	print("CurrentCount: %u CurrentCount + 1: %u\n", currentCount, currentCount + 1);
+	/*currentCount = SPlusHelpers.GetCurrentSourceCount(sources);
                                          
 	//Skipping the first 2 elements. If CurrentCount is 0, actual S+ array size is 2. Need it to be one bigger, so we add 3
 	if(ResizeSourceArray(currentCount + 1) < 0)
@@ -202,7 +205,9 @@ PUSH AddSource
 		return;
 	}
 
-	sources[currentCount + 2] = newSource;
+	sources[currentCount + 2] = newSource;*/
+
+	SPlusHelpers.AddNewSource(sources, newSource);
 
 	UpdateOutputs();	
 
@@ -238,11 +243,6 @@ PUSH RemoveSource
 	UpdateOutputs();
 	
 	ShowSave = 1;
-}
-
-push Update
-{
-	reader.ReadSettings();
 }
 
 push Save
@@ -281,14 +281,14 @@ Change SourceInput
 
 Function Main()
 {
-     WaitForInitializationComplete();
+    WaitForInitializationComplete();
 
 	Initialize();
 	
 	reader.Initialize(FileName, sectionName);
 	reader.ReadSettings();
 	
-	writer.Initialize(FileName, sectionName);
+	writer.InitializeWithSectionName(FileName, sectionName);
 }
 
 

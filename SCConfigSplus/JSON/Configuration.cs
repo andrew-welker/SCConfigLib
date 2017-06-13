@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SCConfigSplus.JSON
+namespace SCConfigSPlus.JSON
 {
     /// <summary>
     /// Root Configuration class for the config file. Holds references for the rest of the configuration.
